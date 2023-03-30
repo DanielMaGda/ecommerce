@@ -1,0 +1,31 @@
+<ng-container>
+  <h1 mat-dialog-title>Edit Product</h1>
+  <div mat-dialog-content>
+    <mat-form-field class="example-form-field" appearance="fill">
+      <mat-label>{{data.name}}</mat-label>
+      <input matInput type="text" [(ngModel)]="data.name">
+      <button matSuffix mat-icon-button aria-label="Clear">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+    <mat-form-field class="example-form-field" appearance="fill">
+      <mat-label>{{data.manufacturer}}</mat-label>
+      <input matInput type="text" [(ngModel)]="data.manufacturer">
+      <button matSuffix mat-icon-button aria-label="Clear">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+    <mat-form-field class="example-form-field" appearance="fill">
+      <mat-label>{{data.price}}</mat-label>
+      <input matInput type="text" [(ngModel)]="data.price">
+      <button matSuffix mat-icon-button aria-label="Clear">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+  </div>
+  <button mat-button (click)="EditProduct(data)">
+    <mat-icon>submit</mat-icon>
+    Edit
+  </button>
+</ng-container>

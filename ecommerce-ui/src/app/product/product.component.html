@@ -1,0 +1,41 @@
+<ng-container>
+  <mat-card class="actions">
+    <mat-form-field class="search-field" appearance="fill">
+      <mat-label>Search product</mat-label>
+      <input matInput type="text" [(ngModel)]="term">
+    </mat-form-field>
+
+
+    <mat-list-item *ngFor="let category of category">
+      <button class="category" (click)="ChooseByCategory(category.name)" mat-button>{{category.name}}
+      </button>
+    </mat-list-item>
+<!--    <button class="AddProduct" mat-button (click)="ProductDialog()">Add new product</button>-->
+  </mat-card>
+
+  <ng-container>
+    <mat-card class="products" *ngFor="let order of productOrders | filter : term">
+      <mat-card-header>
+        <mat-card-title>
+          {{order.product.name}}
+        </mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <b>Price</b>
+        {{order.product.price}}
+        <mat-divider></mat-divider>
+        <b>Manufacturer</b>
+        {{order.product.manufacturer}}
+
+      </mat-card-content>
+      <mat-card-actions>
+        <button mat-button type="button" (click)="addToCart(order.product)">Add Product to Cart</button>
+        <ng-container *ngIf="isUserAdmin">
+          <button mat-button type="button" (click)="EditProduct(order.product,order.product.id)">Edit product</button>
+          <button mat-button type="button" (click)="DeleteProduct(order.product.id)">Delete product</button>
+
+        </ng-container>
+      </mat-card-actions>
+    </mat-card>
+  </ng-container>
+</ng-container>

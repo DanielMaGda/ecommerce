@@ -1,0 +1,31 @@
+<ng-container>
+  <h1 mat-dialog-title>Add Product</h1>
+  <div mat-dialog-content>
+    <mat-form-field class="example-form-field" appearance="fill">
+      <mat-label>Product Name</mat-label>
+      <input matInput type="text" [(ngModel)]="product.name" placeholder="Product Name">
+
+    </mat-form-field>
+    <mat-divider></mat-divider>
+    <mat-form-field class="example-form-field" appearance="fill">
+      <mat-label>Product manufacturer</mat-label>
+      <input matInput type="text" [(ngModel)]="product.manufacturer" placeholder="Product manufacturer">
+
+    </mat-form-field>
+    <mat-divider></mat-divider>
+    <mat-form-field class="example-form-field" appearance="fill">
+      <mat-label>Product price</mat-label>
+      <input matInput type="text" [(ngModel)]="product.price" placeholder="Product price">
+
+    </mat-form-field>
+    <mat-divider></mat-divider>
+
+    <mat-form-field class="example-form-field" appearance="fill">
+      <mat-label>Product price</mat-label>
+      <input matInput type="text" [(ngModel)]="product.category.id" placeholder="Product category">
+
+    </mat-form-field>
+
+  </div>
+</ng-container>
+

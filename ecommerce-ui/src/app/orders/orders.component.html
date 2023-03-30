@@ -1,0 +1,16 @@
+<ng-container>
+  <h1 mat-dialog-title>Order</h1>
+  <div mat-dialog-content *ngFor="let orders of data">
+    <b>Product Name</b>
+    {{orders.product.name}}
+    <mat-divider></mat-divider>
+    <b>Product Price</b>
+
+    {{orders.product.price}}
+
+  </div>
+  <button mat-button (click)="MakeOrder(data)">
+    <mat-icon>submit</mat-icon>
+    MakeOrder
+  </button>
+</ng-container>

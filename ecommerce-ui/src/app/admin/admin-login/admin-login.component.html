@@ -1,0 +1,15 @@
+<div>
+  <div>
+    <div *ngIf='invalidLogin'>{{errorMessage}}</div>
+    <div *ngIf='loginSuccess'>{{successMessage}}</div>
+    <h3>Login</h3>
+
+    <form>
+      <input type="text" id="username" [(ngModel)]="username" name="username"
+             placeholder="username">
+      <input type="password" id="password" [(ngModel)]="password" name="password"
+             placeholder="password">
+      <input type="submit" (click)=handleLogin() value="Log In">
+    </form>
+  </div>
+</div>

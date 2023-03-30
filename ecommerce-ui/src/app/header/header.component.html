@@ -1,0 +1,58 @@
+<mat-toolbar class="mat-toolbar">
+
+  <button
+    mat-icon-button
+    *ngIf="sidenav.mode === 'over'"
+    (click)="sidenav.toggle()"
+  >
+    <mat-icon *ngIf="!sidenav.opened"> menu</mat-icon>
+    <mat-icon *ngIf="sidenav.opened"> close</mat-icon>
+  </button>
+  <p> PC Parts Store</p>
+
+
+</mat-toolbar>
+<mat-sidenav-container>
+  <mat-sidenav #sidenav="matSidenav" class="mat-elevation-z8">
+
+
+    <mat-divider></mat-divider>
+
+    <button mat-button class="menu-button" routerLink="/product">
+      <mat-icon>home</mat-icon>
+      <span>Browse</span>
+    </button>
+
+    <button mat-button class="menu-button" routerLink="/cart">
+      <mat-icon>shopping_cart
+      </mat-icon>
+      <span>Cart</span>
+    </button>
+
+    <ng-container *ngIf="isUserAdmin">
+      <button mat-button class="menu-button" routerLink="/admin/account">
+        <mat-icon>manage_accounts</mat-icon>
+        <span>Users</span>
+      </button>
+      <mat-divider></mat-divider>
+
+
+    </ng-container>
+
+    <button *ngIf="isLoggedIn" mat-button class="menu-button" routerLink="/logout" (click)=handleLogout()>
+      <mat-icon>logout</mat-icon>
+      <span>Logout</span>
+    </button>
+
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <div class="content mat-elevation-z8">
+      <router-outlet></router-outlet>
+    </div>
+
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
+
+
+
