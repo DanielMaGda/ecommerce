@@ -1,5 +1,7 @@
 package com.danmag.ecommerce.service.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.List;
 
 public class CategoryDTO {
@@ -24,7 +26,7 @@ public class CategoryDTO {
     private String name;
 
 
-
+    @JsonIgnore
     private List<FeatureDTO> features;
 
     public List<FeatureDTO> getFeatures() {

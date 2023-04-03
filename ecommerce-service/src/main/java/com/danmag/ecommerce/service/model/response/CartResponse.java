@@ -1,4 +1,4 @@
-package com.danmag.ecommerce.service.model.request;
+package com.danmag.ecommerce.service.model.response;
 
 import com.danmag.ecommerce.service.dto.CartItemDto;
 import lombok.Data;

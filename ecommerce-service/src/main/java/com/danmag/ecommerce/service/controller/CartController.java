@@ -2,13 +2,15 @@ package com.danmag.ecommerce.service.controller;
 
 import com.danmag.ecommerce.service.api.ApiResponse;
 import com.danmag.ecommerce.service.dto.CartDto;
+import com.danmag.ecommerce.service.model.request.RemoveFromCartRequest;
 import com.danmag.ecommerce.service.service.CartService;
 import com.danmag.ecommerce.service.model.request.AddToCartRequest;
-import com.danmag.ecommerce.service.model.request.CartResponse;
+import com.danmag.ecommerce.service.model.response.CartResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @CrossOrigin
@@ -30,7 +32,7 @@ public class CartController {
 
     @GetMapping(value = "/{id}")
     public ResponseEntity<ApiResponse> getById(@PathVariable("id") long id) {
-        CartDto cartDto = cartService.getCartByUserId(id);
+        CartDto cartDto = cartService.getCartByAccountId(id);
         return new ResponseEntity<>(new ApiResponse(HttpStatus.OK.value(), "succ", cartDto), HttpStatus.OK);
     }
 
@@ -39,6 +41,11 @@ public class CartController {
 
         return cartService.addProductToCart(addToCartRequest.getProductId(), addToCartRequest.getAmount());
 
-        //new ResponseEntity<>(new ApiResponse(HttpStatus.OK.value(), "Success"), HttpStatus.OK);
+    }
+
+    @DeleteMapping()
+    public ResponseEntity<ApiResponse> deleteProductFromCart(@RequestBody RemoveFromCartRequest removeFromCartRequest) throws AccessDeniedException {
+        cartService.removeProductFromCart(removeFromCartRequest);
+        return new ResponseEntity<>(new ApiResponse(HttpStatus.OK.value(), "Success"), HttpStatus.OK);
     }
 }

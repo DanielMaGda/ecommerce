@@ -1,24 +1,30 @@
 package com.danmag.ecommerce.service.config;
 
+import com.danmag.ecommerce.service.security.JwtAuthenticationFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
 //TODO Get rid of generic exception
+@EnableWebSecurity
+@RequiredArgsConstructor
 @Configuration
 public class SecuritySet {
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final AuthenticationProvider authenticationProvider;
+    private final LogoutHandler logoutHandler;
 
     //TODO Make something to dont disable CSRF
     @Bean
@@ -26,21 +32,22 @@ public class SecuritySet {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors().and().csrf().disable()
-                .httpBasic().and()
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/console").permitAll()
-                .antMatchers(HttpMethod.GET, "/api/**").permitAll()
-                //.hasAnyAuthority("ADMIN", "USER")
-
-                .antMatchers("/admin/login").hasAuthority("ADMIN")
-                .antMatchers("/login").hasAuthority("USER")
-                .antMatchers(HttpMethod.POST, "/api/user/users").permitAll()
-                .antMatchers(HttpMethod.POST, "/api/**").hasAnyAuthority("USER", "ADMIN")
-                .antMatchers(HttpMethod.DELETE, "/api/**").permitAll()
-                //.hasAuthority("ADMIN")
+                .antMatchers("/api/auth/authenticate").permitAll()
+                .antMatchers("/api/auth/register").permitAll()
+                .antMatchers("/api/**").hasAnyAuthority("USER", "ADMIN")
                 .anyRequest().authenticated()
                 .and()
-                .logout().permitAll();
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .logout()
+                .logoutUrl("/api/v1/auth/logout")
+                .addLogoutHandler(logoutHandler)
+                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
+        ;
 
         return http.build();
     }
@@ -49,11 +56,6 @@ public class SecuritySet {
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         return web -> web.ignoring().antMatchers("/h2-console/**");
-    }
-    //TODO Generic Exception
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean

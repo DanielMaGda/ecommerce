@@ -9,8 +9,4 @@ public class FeatureDTO {
     private String shortName;
     private String description;
 
-
-    private FeatureValueDTO featureValues;
-
-
 }

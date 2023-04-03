@@ -15,8 +15,7 @@ public class ProductDTO {
 
     private CategoryDTO category;
 
+    private Integer stock;
 
-    List<FeatureDTO> features;
-
-
+    private List<ProductFeatureDTO> features;
 }

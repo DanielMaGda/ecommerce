@@ -1,0 +1,37 @@
+package com.danmag.ecommerce.service.controller;
+
+import com.danmag.ecommerce.service.model.request.AuthenticationRequest;
+import com.danmag.ecommerce.service.model.request.RegisterRequest;
+import com.danmag.ecommerce.service.model.response.AuthenticationResponse;
+import com.danmag.ecommerce.service.service.AuthenticationService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+
+@RestController
+@RequestMapping("api/auth")
+public class AuthenticationController {
+    private final AuthenticationService authenticationService;
+
+    public AuthenticationController(AuthenticationService authenticationService ) {
+        this.authenticationService = authenticationService;
+    }
+
+
+    @PostMapping("/authenticate")
+    public AuthenticationResponse authenticate(@RequestBody AuthenticationRequest authenticationRequest) {
+        return authenticationService.authenticate(authenticationRequest);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<AuthenticationResponse> register(
+            @RequestBody RegisterRequest request
+    ) {
+        return ResponseEntity.ok(authenticationService.register(request));
+    }
+
+
+}

@@ -13,8 +13,8 @@ public class BrandService {
     public BrandService(BrandRepository brandRepository) {
         this.brandRepository = brandRepository;
     }
-
-    public List<Brand> getBrand() {
+    //TODO make rest of Crud
+    public List<Brand> getAllBrands() {
         return brandRepository.findAll();
     }
 }

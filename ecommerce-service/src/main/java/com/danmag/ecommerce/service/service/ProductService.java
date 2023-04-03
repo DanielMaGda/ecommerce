@@ -1,26 +1,18 @@
 package com.danmag.ecommerce.service.service;
 
-import com.danmag.ecommerce.service.dto.FeatureDTO;
 import com.danmag.ecommerce.service.dto.ProductDTO;
-import com.danmag.ecommerce.service.exceptions.ResourceNotFoundException;
-import com.danmag.ecommerce.service.mapper.ProductMapper;
-import com.danmag.ecommerce.service.model.Feature;
-import com.danmag.ecommerce.service.model.FeatureValue;
-import com.danmag.ecommerce.service.model.ProductFeatures;
+import com.danmag.ecommerce.service.dto.ProductFeatureDTO;
+import com.danmag.ecommerce.service.model.Product;
 import com.danmag.ecommerce.service.repository.FeatureRepository;
-import com.danmag.ecommerce.service.repository.FeatureValueRepository;
 import com.danmag.ecommerce.service.repository.ProductFeatureRepository;
 import com.danmag.ecommerce.service.repository.ProductRepository;
-import com.danmag.ecommerce.service.model.Product;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.ExpressionException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 //TODO Factory: You could use the Factory pattern to create different types of products in the online shop.
 // The factory would have a method that takes in the type of product and returns an instance of that product
 // without specifying the exact class. This allows for easy addition of new products to the shop without modifying the existing code.
@@ -32,36 +24,38 @@ import java.util.stream.Collectors;
 public class ProductService {
     private final ProductRepository productRepository;
 
-    private final ProductMapper productMapper;
-
-    private final ProductFeatureRepository productFeatureRepository;
-
-    private final FeatureRepository featureRepository;
+    private final ProductFeaturesService productFeaturesService;
     @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, FeatureValueRepository featureValueRepository, ProductMapper productMapper, ProductFeatureRepository productFeatureRepository, FeatureRepository featureRepository) {
+    public ProductService(ProductRepository productRepository, ProductFeaturesService productFeaturesService) {
         this.productRepository = productRepository;
-        this.productMapper = productMapper;
-        this.productFeatureRepository = productFeatureRepository;
-        this.featureRepository = featureRepository;
-    }
 
+        this.productFeaturesService = productFeaturesService;
+    }
 
     public List<ProductDTO> getAllProductsWithFeatures() {
 
-        List<Product> products = productRepository.findAll();
-        List<ProductDTO> productDTOs = new ArrayList<>();
-        for (Product product : products) {
-            productDTOs.add(productMapper.convertToDTO(product));
-        }
-        return productDTOs;
+        List<Product> productList = productRepository.findAll();
+        return productList.stream()
+                .map(product -> {
+                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+                    List<ProductFeatureDTO> productFeatureDTO = productFeaturesService.getProductFeatureListForProduct(product.getId());
+                    productDTO.setFeatures(productFeatureDTO);
+                    return productDTO;
+                })
+                .toList();
     }
 
-    public ProductDTO getProductById(Long id) throws Exception {
+    public ProductDTO getProductById(long id) {
         Product product = productRepository.findById(id).orElseThrow(() -> new ExpressionException("Product not found with id " + id));
-        return productMapper.convertToDTO(product);
+        ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+        List<ProductFeatureDTO> productFeatureDTO = productFeaturesService.getProductFeatureListForProduct(id);
+        productDTO.setFeatures(productFeatureDTO);
+
+
+        return productDTO;
     }
 
     public ProductDTO updateProduct(long id, ProductDTO productDTO) throws Exception {
@@ -70,34 +64,24 @@ public class ProductService {
             Product product = productOptional.get();
             product.setName(productDTO.getName());
             product.setPrice(productDTO.getPrice());
-            product = productRepository.save(product);
-            return new ProductDTO();
+            product = productRepository.saveAndFlush(product);
+            productFeaturesService.updateProductFeatures(product.getId(), productDTO);
+            return modelMapper.map(product, ProductDTO.class);
         } else {
-            throw new Exception();
+            throw new Exception("Product not found with id " + id);
         }
+
     }
 
     public ProductDTO createProduct(ProductDTO productDTO) {
-        // Validate the input ProductDTO
-        //Validator.validate(productDTO);
-        Product product = productMapper.convertToEntity(productDTO);
+        //TODO make validators
+        Product product = modelMapper.map(productDTO, Product.class);
         productRepository.saveAndFlush(product);
-        List<ProductFeatures> productFeaturesList = productDTO.getFeatures().stream()
-                .map(featureDTO -> createProductFeature(featureDTO, product))
-                .collect(Collectors.toList());
-        productFeatureRepository.saveAll(productFeaturesList);
-        return productMapper.convertToDTO(product);
-    }
 
-    private ProductFeatures createProductFeature(FeatureDTO featureDTO, Product product) {
-        Feature feature = featureRepository.findById(featureDTO.getId()).orElseThrow(() -> new ResourceNotFoundException("Feature not found with id: " + featureDTO.getId()));
-        FeatureValue featureValue = modelMapper.map(featureDTO.getFeatureValues(), FeatureValue.class);
-        featureValue.setFeature(feature);
-        ProductFeatures productFeatures = new ProductFeatures();
-        productFeatures.setProduct(product);
-        productFeatures.setFeatureValue(featureValue);
-        productFeatures.setFeature(feature);
-        return productFeatures;
+        // Create the product features
+        productFeaturesService.createProductFeatures(product, productDTO);
+
+        return modelMapper.map(product, ProductDTO.class);
     }
 
     public void deleteProduct(long id) {

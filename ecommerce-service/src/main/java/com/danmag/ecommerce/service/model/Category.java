@@ -1,5 +1,8 @@
 package com.danmag.ecommerce.service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -8,19 +11,24 @@ import java.util.List;
 
 @Data
 @Entity
+@Builder
+@AllArgsConstructor
 @Table(name = "category")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String name;
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "parent_category_id")
     private Category parentCategory;
+    @JsonIgnore
 
     @ManyToOne
     @JoinColumn(name = "parent_group_id")
     private CategoryGroup parentGroup;
+    @JsonIgnore
 
     @OneToMany(mappedBy = "parentCategory")
     private List<Category> subcategories;
@@ -35,5 +43,4 @@ public class Category {
     public Category() {
         feature = new ArrayList<>();
     }
-
 }
