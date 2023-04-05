@@ -1,4 +1,4 @@
-package com.danmag.ecommerce.service.model.response;
+package com.danmag.ecommerce.service.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

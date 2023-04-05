@@ -1,9 +1,10 @@
 package com.danmag.ecommerce.service.service;
 
 
+import com.danmag.ecommerce.service.dto.response.AccountResponse;
+import com.danmag.ecommerce.service.exceptions.InvalidArgumentException;
 import com.danmag.ecommerce.service.exceptions.ResourceNotFoundException;
 import com.danmag.ecommerce.service.model.Account;
-import com.danmag.ecommerce.service.dto.AccountLoginDTO;
 import com.danmag.ecommerce.service.repository.AccountsRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 import java.nio.file.AccessDeniedException;
 import java.util.*;
 
-// TODO Customer Service interacting user order History /sending email confirmation when new acc
 @Service
 public class AccountsService {
     private final AccountsRepository accountsRepository;
@@ -24,16 +24,27 @@ public class AccountsService {
         this.accountsRepository = accountsRepository;
     }
 
-    public Account getByUserName(String userName) {
-        Optional<Account> customers = accountsRepository.findByUserName(userName);
-        if (customers.isPresent()) {
-            return customers.get();
-        }
-        throw new NoSuchElementException("User with " + userName + " not present");
+    public List<AccountResponse> getAllAccounts() {
+        List<Account> accountList = accountsRepository.findAll();
+        return accountList.stream().map(account -> modelMapper.map(account, AccountResponse.class)).toList();
+
 
     }
 
-    public Account getUser() throws AccessDeniedException {
+    public AccountResponse getAccountById(long id) {
+        Optional<Account> account = accountsRepository.findById(id);
+        if (account.isPresent()) {
+            return modelMapper.map(account.get(), AccountResponse.class);
+        } else {
+            throw new NoSuchElementException("User with " + id + " not present");
+
+        }
+
+
+    }
+
+    public Optional<Account> getAccount() throws AccessDeniedException {
+
         String userName = SecurityContextHolder.getContext().getAuthentication().getName();
         if (Objects.isNull(userName)) {
             throw new AccessDeniedException("Invalid access");
@@ -43,38 +54,38 @@ public class AccountsService {
         if (account.isEmpty()) {
             throw new ResourceNotFoundException("User not found");
         }
-        return account.get();
+        return account;
     }
 
-    public List<Account> getAll() {
-        return accountsRepository.findAll();
-    }
 
-    public void deleteUser(long id) {
-        Account account = accountsRepository.findById(id).orElse(null);
-        if (account != null) {
-            accountsRepository.delete(account);
+    public void deleteAccount(long id) {
+        Optional<Account> account = accountsRepository.findById(id);
+        if (account.isEmpty()) {
+            throw new NoSuchElementException("User with id " + id + " not present");
+
         } else {
-            throw new NoSuchElementException("User with id" + id + " not present");
+            accountsRepository.delete(account.get());
 
         }
 
     }
 
-    public AccountLoginDTO fetchUser() throws AccessDeniedException {
-        String userName = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (Objects.isNull(userName)) {
-            throw new AccessDeniedException("invalid Acces ");
-        }
-        Optional<Account> accounts = accountsRepository.findByUserName(userName);
-        if (Objects.isNull(accounts)) {
-            throw new ResourceNotFoundException("Account not found.");
+//    public Optional<AccountResponse> fetchUser(long id) {
+//        Optional<Account> optionalAccount = accountsRepository.findById(id);
+//        return optionalAccount.map(account -> modelMapper.map(account, AccountResponse.class));
+//    }
+
+
+    public Account saveAccount(Optional<Account> account) {
+        if (Objects.isNull(account)) {
+            throw new InvalidArgumentException("Null user");
 
         }
+        if (account.isPresent()) {
+            return accountsRepository.save(account.get());
 
-        return accounts.map(account -> modelMapper.map(account, AccountLoginDTO.class))
-                .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
-
+        }
+        throw new NoSuchElementException("account not present");
     }
 
 }

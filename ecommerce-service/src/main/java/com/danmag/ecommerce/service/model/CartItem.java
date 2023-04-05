@@ -4,6 +4,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 
 @Entity
 @Data
@@ -14,14 +16,18 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;
 
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "cart_id")
     private Cart cart;
-    @Column(name = "amount")
+
+    @NotNull
+    @Min(value = 1)
     private Integer amount;
 
     @Override

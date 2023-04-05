@@ -11,7 +11,13 @@ import java.util.List;
 public class CartDto {
 
     private long id;
-    private double totalPrice;
+    @JsonManagedReference
+    private AccountDTO account;
+    private float totalPrice;
+    private float totalCartPrice;
+    private float totalCargoPrice;
+    @JsonManagedReference
+    private List<CartItemDto> cartItemList;
 
     @Override
     public String toString() {
@@ -21,11 +27,4 @@ public class CartDto {
                 ", cartItemList=" + cartItemList +
                 '}';
     }
-
-    @JsonManagedReference
-
-    private List<CartItemDto> cartItemList;
-    @JsonManagedReference
-    private AccountDTO account;
-
 }

@@ -2,9 +2,9 @@ package com.danmag.ecommerce.service.service;
 
 import com.danmag.ecommerce.service.dto.ProductDTO;
 import com.danmag.ecommerce.service.dto.ProductFeatureDTO;
+import com.danmag.ecommerce.service.dto.request.UpdateProductRequest;
+import com.danmag.ecommerce.service.exceptions.ProductNotFoundException;
 import com.danmag.ecommerce.service.model.Product;
-import com.danmag.ecommerce.service.repository.FeatureRepository;
-import com.danmag.ecommerce.service.repository.ProductFeatureRepository;
 import com.danmag.ecommerce.service.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,23 +58,24 @@ public class ProductService {
         return productDTO;
     }
 
-    public ProductDTO updateProduct(long id, ProductDTO productDTO) throws Exception {
-        Optional<Product> productOptional = productRepository.findById(id);
-        if (productOptional.isPresent()) {
-            Product product = productOptional.get();
-            product.setName(productDTO.getName());
-            product.setPrice(productDTO.getPrice());
-            product = productRepository.saveAndFlush(product);
-            productFeaturesService.updateProductFeatures(product.getId(), productDTO);
-            return modelMapper.map(product, ProductDTO.class);
-        } else {
-            throw new Exception("Product not found with id " + id);
-        }
+    public ProductDTO updateProduct(long id, UpdateProductRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ProductNotFoundException("Product not found with id " + id));
 
+        product.setName(request.getName());
+        product.setPrice(request.getPrice());
+        product.setStock(request.getStock());
+
+        product = productRepository.saveAndFlush(product);
+
+        productFeaturesService.updateProductFeatures(product.getId(), request);
+
+        return modelMapper.map(product, ProductDTO.class);
     }
 
+
+
     public ProductDTO createProduct(ProductDTO productDTO) {
-        //TODO make validators
         Product product = modelMapper.map(productDTO, Product.class);
         productRepository.saveAndFlush(product);
 

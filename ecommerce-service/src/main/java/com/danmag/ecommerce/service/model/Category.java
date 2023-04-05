@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +21,9 @@ public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @NotNull
+    @Size(min = 2, max = 50)
+    @Pattern(regexp = "^[A-Za-z0-9 /]+$")
     private String name;
     @JsonIgnore
     @ManyToOne
@@ -33,6 +39,17 @@ public class Category {
     @OneToMany(mappedBy = "parentCategory")
     private List<Category> subcategories;
 
+
+    @Override
+    public String toString() {
+        return "Category{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", parentCategory=" + parentCategory +
+                ", parentGroup=" + parentGroup +
+                ", feature=" + feature +
+                '}';
+    }
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "category_feature",

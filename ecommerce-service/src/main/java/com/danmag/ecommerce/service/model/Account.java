@@ -4,14 +4,22 @@ import com.danmag.ecommerce.service.dto.AccountDTO;
 import com.danmag.ecommerce.service.enums.Role;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.util.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @Builder
 @Data
@@ -20,22 +28,31 @@ import java.util.*;
 @Entity
 @Table(name = "account")
 public class Account implements UserDetails {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(name = "userName")
+
+    @NotNull
+    @Size(min = 3, max = 20)
+    @Pattern(regexp = "^[a-zA-Z0-9]+$")
+
+    @Column(unique = true)
+
     private String userName;
+
+    @NotNull
+    @Email
     private String email;
+
+    @NotNull
+    @Size(min = 8, max = 75)
+    @Pattern(regexp = "^(?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$")
     private String password;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public Account(AccountDTO accountDTO) {
-        this.id = accountDTO.getId();
-        this.email = accountDTO.getEmail();
-        this.userName = accountDTO.getUsername();
-    }
 
     @JsonIgnore
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -52,7 +69,7 @@ public class Account implements UserDetails {
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", role=" + role +
-                ", orderList=" + orderList +
+                ", getAllOrders=" + orderList +
                 '}';
     }
 
@@ -65,6 +82,12 @@ public class Account implements UserDetails {
 
 
         return authorities;
+    }
+
+    public Account(AccountDTO accountDTO) {
+        this.id = accountDTO.getId();
+        this.email = accountDTO.getEmail();
+        this.userName = accountDTO.getUsername();
     }
 
     @Override

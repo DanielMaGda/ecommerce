@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 // the change would be represented by a command object that could be stored and later used to undo or redo the change.
 @CrossOrigin
 @RestController
-@RequestMapping(value = "/api/cart")
+@RequestMapping(value = "/api/v1/cart")
 public class OrderItemController {
 
 

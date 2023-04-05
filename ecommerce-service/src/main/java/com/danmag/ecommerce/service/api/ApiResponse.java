@@ -1,16 +1,12 @@
 package com.danmag.ecommerce.service.api;
 
-public class ApiResponse {
+public class ApiResponse<T> {
 
     private int status;
     private String message;
-    private Object data;
+    private T data;
 
-    public ApiResponse(int status, String message) {
-        this.status = status;
-        this.message = message;
-    }
-    public ApiResponse(int status, String message, Object data) {
+    public ApiResponse(int status, String message, T data) {
         this.status = status;
         this.message = message;
         this.data = data;
@@ -32,11 +28,11 @@ public class ApiResponse {
         this.message = message;
     }
 
-    public Object getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(T data) {
         this.data = data;
     }
 }

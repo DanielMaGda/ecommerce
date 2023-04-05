@@ -1,19 +1,13 @@
 package com.danmag.ecommerce.service.dto;
 
-import com.danmag.ecommerce.service.model.OrderItem;
+import lombok.Data;
 
-import java.util.List;
-
+@Data
 public class OrderItemsDto {
 
-    public List<OrderItem> getOrderItems() {
-        return orderItems;
-    }
+    private long id;
+    private long amount;
 
-    public void setOrderItems(List<OrderItem> orderItems) {
-        this.orderItems = orderItems;
-    }
-
-    private List<OrderItem> orderItems;
+    private OrderProductDto product;
 
 }

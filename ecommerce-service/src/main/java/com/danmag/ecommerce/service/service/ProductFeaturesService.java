@@ -2,6 +2,7 @@ package com.danmag.ecommerce.service.service;
 
 import com.danmag.ecommerce.service.dto.ProductDTO;
 import com.danmag.ecommerce.service.dto.ProductFeatureDTO;
+import com.danmag.ecommerce.service.dto.request.UpdateProductRequest;
 import com.danmag.ecommerce.service.model.Feature;
 import com.danmag.ecommerce.service.model.FeatureValue;
 import com.danmag.ecommerce.service.model.Product;
@@ -13,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ProductFeaturesService {
@@ -53,10 +53,10 @@ public class ProductFeaturesService {
         productFeatureRepository.saveAll(productFeaturesList);
     }
 
-    public void updateProductFeatures(long productId, ProductDTO productDTO) {
+    public void updateProductFeatures(long productId, UpdateProductRequest request) {
         List<ProductFeatures> savedProductFeatures = productFeatureRepository.findByProductId(productId);
 
-        for (ProductFeatureDTO productFeatureDTO : productDTO.getFeatures()) {
+        for (ProductFeatureDTO productFeatureDTO : request.getFeatures()) {
             Feature feature = modelMapper.map(productFeatureDTO.getFeature(), Feature.class);
             FeatureValue newFeatureValue = modelMapper.map(productFeatureDTO.getFeatureValue(), FeatureValue.class);
 
@@ -75,7 +75,7 @@ public class ProductFeaturesService {
             } else {
                 // If an existing ProductFeatures record wasn't found, create a new one with the new FeatureValue
                 ProductFeatures newProductFeatures = new ProductFeatures();
-                newProductFeatures.setProduct(modelMapper.map(productDTO, Product.class));
+                newProductFeatures.setProduct(modelMapper.map(request, Product.class));
                 newProductFeatures.setFeature(feature);
                 newProductFeatures.setFeatureValue(newFeatureValue);
                 productFeatureRepository.save(newProductFeatures);

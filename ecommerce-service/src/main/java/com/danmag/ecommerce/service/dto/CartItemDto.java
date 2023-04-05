@@ -27,10 +27,4 @@ public class CartItemDto {
                 ", amount=" + amount +
                 '}';
     }
-
-    public CartItemDto(int amount, CartProductDto product, CartDto cart) {
-        this.amount = amount;
-        this.product = product;
-        this.cart = cart;
-    }
 }

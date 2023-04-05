@@ -1,12 +1,13 @@
 package com.danmag.ecommerce.service.service;
 
 import com.danmag.ecommerce.service.enums.TokenType;
+import com.danmag.ecommerce.service.exceptions.ConflictException;
 import com.danmag.ecommerce.service.exceptions.CustomNotFoundException;
 import com.danmag.ecommerce.service.model.Account;
 import com.danmag.ecommerce.service.model.Token;
-import com.danmag.ecommerce.service.model.request.AuthenticationRequest;
-import com.danmag.ecommerce.service.model.request.RegisterRequest;
-import com.danmag.ecommerce.service.model.response.AuthenticationResponse;
+import com.danmag.ecommerce.service.dto.request.AuthenticationRequest;
+import com.danmag.ecommerce.service.dto.request.RegisterRequest;
+import com.danmag.ecommerce.service.dto.response.AuthenticationResponse;
 import com.danmag.ecommerce.service.repository.AccountsRepository;
 import com.danmag.ecommerce.service.repository.TokenRepository;
 import com.danmag.ecommerce.service.repository.UserRoleRepository;
@@ -57,6 +58,17 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse register(RegisterRequest request) {
+        // Check if email already exists
+        if (accountsRepository.existsByEmail(request.getEmail())) {
+            throw new ConflictException("Email already exists");
+        }
+
+        // Check if username already exists
+        if (accountsRepository.existsByUserName(request.getUserName())) {
+            throw new ConflictException("Username already taken");
+        }
+
+        // Create new account
         Account user = Account.builder()
                 .userName(request.getUserName())
                 .email(request.getEmail())
@@ -64,9 +76,12 @@ public class AuthenticationService {
                 .role(request.getRole())
                 .build();
         accountsRepository.save(user);
+
+        // Generate JWT token and return response
         String jwtToken = jwtService.generateJwtToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)
                 .build();
     }
+
 }

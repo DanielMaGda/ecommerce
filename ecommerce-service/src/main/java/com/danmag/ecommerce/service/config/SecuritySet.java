@@ -16,26 +16,39 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.servlet.http.HttpServletResponse;
+
 //TODO Get rid of generic exception
 @EnableWebSecurity
 @RequiredArgsConstructor
 @Configuration
 public class SecuritySet {
-
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
     private final LogoutHandler logoutHandler;
+
 
     //TODO Make something to dont disable CSRF
     @Bean
     //TODO Generic Exception
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http = http
+                .exceptionHandling()
+                .authenticationEntryPoint(
+                        (request, response, ex) -> response.sendError(
+                                HttpServletResponse.SC_UNAUTHORIZED,
+                                ex.getMessage()
+                        )
+                )
+                .and();
+
+
         http
                 .cors().and().csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/api/auth/authenticate").permitAll()
-                .antMatchers("/api/auth/register").permitAll()
-                .antMatchers("/api/**").hasAnyAuthority("USER", "ADMIN")
+                .antMatchers("/api/v1/auth/authenticate").permitAll()
+                .antMatchers("/api/v1/auth/register").permitAll()
+                .antMatchers("/api/v1/**").hasAnyAuthority("USER", "ADMIN")
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement()
