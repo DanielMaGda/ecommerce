@@ -1,6 +1,8 @@
 package com.danmag.ecommerce.service.dto.request;
 
 import com.danmag.ecommerce.service.enums.Role;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 import javax.validation.constraints.Email;
@@ -9,6 +11,8 @@ import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 @Data
+@Builder
+@AllArgsConstructor
 public class RegisterRequest {
     @NotNull
     @Size(min = 3, max = 20)

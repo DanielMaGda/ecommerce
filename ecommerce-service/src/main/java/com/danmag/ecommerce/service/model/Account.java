@@ -1,13 +1,8 @@
 package com.danmag.ecommerce.service.model;
 
-import com.danmag.ecommerce.service.dto.AccountDTO;
 import com.danmag.ecommerce.service.enums.Role;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -54,11 +49,13 @@ public class Account implements UserDetails {
     private Role role;
 
 
-    @JsonIgnore
+    @JsonBackReference
     @OneToMany(mappedBy = "account", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Order> orderList;
+    @EqualsAndHashCode.Exclude
     @JsonBackReference
-    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "account", cascade = CascadeType.ALL,
+            fetch = FetchType.LAZY, orphanRemoval = true)
     private Cart cart;
 
     @Override
@@ -69,7 +66,6 @@ public class Account implements UserDetails {
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", role=" + role +
-                ", getAllOrders=" + orderList +
                 '}';
     }
 
@@ -82,12 +78,6 @@ public class Account implements UserDetails {
 
 
         return authorities;
-    }
-
-    public Account(AccountDTO accountDTO) {
-        this.id = accountDTO.getId();
-        this.email = accountDTO.getEmail();
-        this.userName = accountDTO.getUsername();
     }
 
     @Override

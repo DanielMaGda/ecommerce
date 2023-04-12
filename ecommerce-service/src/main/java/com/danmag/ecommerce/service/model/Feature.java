@@ -1,8 +1,6 @@
 package com.danmag.ecommerce.service.model;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -16,6 +14,8 @@ import java.util.Set;
 @Setter
 @NoArgsConstructor
 @Entity
+@AllArgsConstructor
+@Builder
 @Table(name = "feature")
 public class Feature {
     @Id
@@ -39,7 +39,6 @@ public class Feature {
     @Valid
     @OneToMany(mappedBy = "feature", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<ProductFeatures> productFeatures = new HashSet<>();
-
 
 
 }

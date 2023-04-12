@@ -15,7 +15,7 @@ import java.util.List;
 @CrossOrigin
 
 @RestController
-@RequestMapping(value = "/api/v1")
+@RequestMapping("/api/v1/categories")
 public class CategoryController {
     private final CategoryService categoryService;
 
@@ -23,15 +23,14 @@ public class CategoryController {
         this.categoryService = categoryService;
     }
 
-    @GetMapping(value = "/category")
+    @GetMapping()
     public ResponseEntity<ApiResponse<List<CategoryDTO>>> getCategory() {
         try {
             List<CategoryDTO> categories = categoryService.getCategory();
-            ApiResponse<List<CategoryDTO>> response = new ApiResponse<>(HttpStatus.OK.value(), "Success", categories);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Success", categories));
 
         } catch (Exception e) {
-            return new ResponseEntity<>(new ApiResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null), HttpStatus.INTERNAL_SERVER_ERROR);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), null));
         }
     }
 

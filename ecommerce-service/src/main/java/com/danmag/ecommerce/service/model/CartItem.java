@@ -1,5 +1,7 @@
 package com.danmag.ecommerce.service.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +12,8 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "cart_item")
 public class CartItem {
     @Id
@@ -27,7 +31,7 @@ public class CartItem {
     private Cart cart;
 
     @NotNull
-    @Min(value = 1)
+    @Min(1)
     private Integer amount;
 
     @Override

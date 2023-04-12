@@ -1,7 +1,8 @@
 package com.danmag.ecommerce.service.config;
 
+import com.danmag.ecommerce.service.security.AccessDeniedExceptionHandler;
+import com.danmag.ecommerce.service.security.BasicAuthenticationEntryPoint;
 import com.danmag.ecommerce.service.security.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -16,30 +17,26 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.servlet.http.HttpServletResponse;
-
-//TODO Get rid of generic exception
 @EnableWebSecurity
-@RequiredArgsConstructor
 @Configuration
 public class SecuritySet {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
     private final LogoutHandler logoutHandler;
 
+    public SecuritySet(JwtAuthenticationFilter jwtAuthenticationFilter, AuthenticationProvider authenticationProvider, LogoutHandler logoutHandler) {
+        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.authenticationProvider = authenticationProvider;
+        this.logoutHandler = logoutHandler;
+    }
 
-    //TODO Make something to dont disable CSRF
+
     @Bean
-    //TODO Generic Exception
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http = http
                 .exceptionHandling()
-                .authenticationEntryPoint(
-                        (request, response, ex) -> response.sendError(
-                                HttpServletResponse.SC_UNAUTHORIZED,
-                                ex.getMessage()
-                        )
-                )
+                .accessDeniedHandler(new AccessDeniedExceptionHandler())
+                .authenticationEntryPoint(new BasicAuthenticationEntryPoint())
                 .and();
 
 
@@ -59,8 +56,7 @@ public class SecuritySet {
                 .logout()
                 .logoutUrl("/api/v1/auth/logout")
                 .addLogoutHandler(logoutHandler)
-                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext())
-        ;
+                .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext());
 
         return http.build();
     }

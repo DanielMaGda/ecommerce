@@ -1,111 +1,110 @@
 package com.danmag.ecommerce.service.service;
 
 
-import com.danmag.ecommerce.service.dto.OrderDto;
+import com.danmag.ecommerce.service.dto.OrderItemsDto;
 import com.danmag.ecommerce.service.dto.request.PostOrderRequest;
 import com.danmag.ecommerce.service.dto.response.OrderResponse;
-import com.danmag.ecommerce.service.exceptions.AccountNotFoundException;
+import com.danmag.ecommerce.service.enums.ShipmentStatus;
 import com.danmag.ecommerce.service.exceptions.InvalidArgumentException;
 import com.danmag.ecommerce.service.model.*;
-import com.danmag.ecommerce.service.repository.OrderItemRepository;
 import com.danmag.ecommerce.service.repository.OrderRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Service
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
     private final ModelMapper modelMapper;
 
-    private final AccountsService accountsService;
+    private final AccountService accountService;
     private final CartService cartService;
 
     private final OrderItemService orderItemService;
 
+    private final ProductService productService;
+
     @Autowired
-    public OrderService(OrderRepository orderRepository, OrderItemRepository orderItemRepository, ModelMapper modelMapper, AccountsService accountsService, CartService cartService, OrderItemService orderItemService) {
+    public OrderService(OrderRepository orderRepository, ModelMapper modelMapper, AccountService accountService, CartService cartService, OrderItemService orderItemService, ProductService productService) {
         this.orderRepository = orderRepository;
-        this.orderItemRepository = orderItemRepository;
         this.modelMapper = modelMapper;
-        this.accountsService = accountsService;
+        this.accountService = accountService;
         this.cartService = cartService;
         this.orderItemService = orderItemService;
+        this.productService = productService;
     }
 
 
-    public OrderResponse postOrder(PostOrderRequest postOrderRequest) throws AccessDeniedException {
-
-        Optional<Account> account = accountsService.getAccount();
-        if (account.isEmpty()) {
-            throw new AccountNotFoundException("Account is null");
+    public OrderResponse createOrder(PostOrderRequest postOrderRequest) {
+        Account account = accountService.getCurrentUserAccount();
+        Cart cart = account.getCart();
+        if (cart == null || cart.getCartItemList().isEmpty()) {
+            throw new InvalidArgumentException("Cart is empty");
         }
 
-        Cart cart = account.get().getCart();
-        if (cart == null || cart.getCartItemList() == null) {
-            throw new InvalidArgumentException("Cart is not valid");
-        }
+        validateCartItems(cart);
 
-        boolean outOfStock = cart.getCartItemList().stream()
-                .anyMatch(cartItem -> cartItem.getProduct().getStock() < cartItem.getAmount());
+        Order order = new Order();
+        modelMapper.map(postOrderRequest, order);
+        order.setAccount(account);
+        order.setDate(new Date());
+        order.setTotalPrice(cart.getTotalPrice());
+        order.setTotalCargoPrice(cart.getTotalCargoPrice());
+        order.setShipped(ShipmentStatus.PENDING);
 
-        if (outOfStock) {
-            throw new InvalidArgumentException("A product in your cart is out of stock.");
-        }
-
-        Order order = Order.builder()
-                .account(account.get())
-                .shipName(postOrderRequest.getShipName())
-                .phone(postOrderRequest.getPhone())
-                .shipAddress(postOrderRequest.getShipAddress())
-                .billingAddress(postOrderRequest.getBillingAddress())
-                .city(postOrderRequest.getCity())
-                .country(postOrderRequest.getCountry())
-                .state(postOrderRequest.getState())
-                .zip(postOrderRequest.getZip())
-                .trackingNumber(postOrderRequest.getTrackingNumber())
-                .cargoFirm(postOrderRequest.getCargoFirm())
-                .date(new Date())
-                .totalPrice(cart.getTotalPrice())
-                .totalCargoPrice(cart.getTotalCargoPrice())
-                .shipped(1)
-                .build();
-
-        orderRepository.save(order);
-
+        List<OrderItem> orderItemList = new ArrayList<>();
         cart.getCartItemList().forEach(cartItem -> {
             Product product = cartItem.getProduct();
             int amount = cartItem.getAmount();
+            productService.checkProductStock(product.getId(), amount);
             product.setStock(product.getStock() - amount);
-            orderItemService.addOrderItem(product, amount, order);
+            OrderItem orderItem = orderItemService.addOrderItem(product, amount, order);
+            orderItemList.add(orderItem);
         });
 
+        order.setOrderItems(orderItemList);
+        orderRepository.save(order);
         cartService.emptyCart();
 
-        return new OrderResponse();
+        return modelMapper.map(order, OrderResponse.class);
     }
 
-    public List<OrderDto> getAllOrders() {
-        List<Order> orders = orderRepository.findAll();
-        return orders.stream().map(order -> modelMapper.map(order, OrderDto.class)).toList();
+    public List<OrderResponse> getAllOrders() {
+        List<Order> orderList = orderRepository.findAll();
+        return getOrderResponses(orderList);
     }
 
+    public List<OrderResponse> getCurrentAccountOrders() {
+        Account account = accountService.getCurrentUserAccount();
 
-    public List<OrderDto> getOrdersByUserId(long id) throws AccessDeniedException {
-        Optional<Account> account = accountsService.getAccount();
-        if (account.isPresent()) {
-            List<Order> orders = account.get().getOrderList();
-            return orders.stream().map(order -> modelMapper.map(order, OrderDto.class)).toList();
-        } else {
-            // handle the case where the user is not authenticated
-            throw new AccessDeniedException("User not authenticated");
 
+        List<Order> orders = account.getOrderList();
+        return getOrderResponses(orders);
+    }
+
+    private List<OrderResponse> getOrderResponses(List<Order> orders) {
+        List<OrderResponse> orderResponseList = new ArrayList<>();
+
+        orders.forEach(order -> {
+            OrderResponse orderResponse = modelMapper.map(order, OrderResponse.class);
+            orderResponse.setOrderItemsDtoList(order.getOrderItems()
+                    .stream()
+                    .map(orderItem -> modelMapper.map(orderItem, OrderItemsDto.class))
+                    .toList());
+            orderResponseList.add(orderResponse);
+        });
+
+        return orderResponseList;
+    }
+
+    private void validateCartItems(Cart cart) {
+        for (CartItem cartItem : cart.getCartItemList()) {
+            productService.checkProductStock(cartItem.getProduct().getId(), cartItem.getAmount());
         }
-
     }
 }

@@ -11,6 +11,6 @@ public class RemoveFromCartRequest {
 
     private long productId;
     @NotNull
-    @Min(value = 1)
+    @Min(1)
     private int amount;
 }

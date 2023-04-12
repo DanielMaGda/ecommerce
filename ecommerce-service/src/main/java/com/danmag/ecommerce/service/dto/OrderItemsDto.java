@@ -1,13 +1,16 @@
 package com.danmag.ecommerce.service.dto;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderItemsDto {
-
-    private long id;
-    private long amount;
-
-    private OrderProductDto product;
-
+    private String name;
+    private Float price;
+    private Integer amount;
 }

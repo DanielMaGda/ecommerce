@@ -4,7 +4,6 @@ import com.danmag.ecommerce.service.dto.BrandDTO;
 import com.danmag.ecommerce.service.model.Brand;
 import com.danmag.ecommerce.service.repository.BrandRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,18 +11,18 @@ import java.util.List;
 @Service
 public class BrandService {
     private final BrandRepository brandRepository;
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
-    public BrandService(BrandRepository brandRepository) {
+    public BrandService(BrandRepository brandRepository, ModelMapper modelMapper) {
         this.brandRepository = brandRepository;
+        this.modelMapper = modelMapper;
     }
 
     public List<BrandDTO> getAllBrands() {
 
         List<Brand> brands = brandRepository.findAll();
         return brands.stream()
-                .map(category -> modelMapper.map(brands, BrandDTO.class))
+                .map(brand  -> modelMapper.map(brand, BrandDTO.class))
                 .toList();
     }
 

@@ -1,9 +1,7 @@
 package com.danmag.ecommerce.service.model;
 
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import javax.persistence.*;
@@ -16,7 +14,9 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @CrossOrigin
+@Builder
 @Entity
 @Table(name = "product")
 public class Product {
@@ -27,6 +27,7 @@ public class Product {
 
     @NotNull
     @Size(min = 1, max = 255)
+    @Column(unique = true)
     private String name;
 
     @ManyToOne
@@ -35,14 +36,14 @@ public class Product {
     private Brand brand;
 
     @NotNull
-    @Min(value = 0)
-    private Long price;
+    @Min(0)
+    private double price;
 
     @Size(max = 5000)
     private String description;
 
     @NotNull
-    @Min(value = 0)
+    @Min(0)
     private Integer stock;
     @Valid
     @ManyToOne

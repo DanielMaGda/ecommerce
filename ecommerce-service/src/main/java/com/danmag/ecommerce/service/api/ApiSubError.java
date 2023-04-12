@@ -4,8 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-abstract class ApiSubError {
-
+class ApiSubError {
+    public ApiSubError() {
+    }
 }
 
 @Data
@@ -17,7 +18,8 @@ class ApiValidationError extends ApiSubError {
     private Object rejectedValue;
     private String message;
 
-    ApiValidationError(String object, String message) {
+    // public constructor for creating instances of this class
+    public ApiValidationError(String object, String message) {
         this.object = object;
         this.message = message;
     }

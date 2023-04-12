@@ -1,16 +1,15 @@
 package com.danmag.ecommerce.service.service;
 
-import com.danmag.ecommerce.service.enums.TokenType;
-import com.danmag.ecommerce.service.exceptions.ConflictException;
-import com.danmag.ecommerce.service.exceptions.CustomNotFoundException;
-import com.danmag.ecommerce.service.model.Account;
-import com.danmag.ecommerce.service.model.Token;
 import com.danmag.ecommerce.service.dto.request.AuthenticationRequest;
 import com.danmag.ecommerce.service.dto.request.RegisterRequest;
 import com.danmag.ecommerce.service.dto.response.AuthenticationResponse;
+import com.danmag.ecommerce.service.enums.TokenType;
+import com.danmag.ecommerce.service.exceptions.AccountNotFoundException;
+import com.danmag.ecommerce.service.exceptions.ConflictException;
+import com.danmag.ecommerce.service.model.Account;
+import com.danmag.ecommerce.service.model.Token;
 import com.danmag.ecommerce.service.repository.AccountsRepository;
 import com.danmag.ecommerce.service.repository.TokenRepository;
-import com.danmag.ecommerce.service.repository.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,11 +26,10 @@ public class AuthenticationService {
     private final TokenRepository tokenRepository;
     private final PasswordEncoder passwordEncoder;
 
-
     private final JwtService jwtService;
 
     @Autowired
-    public AuthenticationService(AccountsRepository accountsRepository, AuthenticationManager authenticationManager, TokenRepository tokenRepository, PasswordEncoder passwordEncoder, UserRoleRepository userRoleRepository, JwtService jwtService) {
+    public AuthenticationService(AccountsRepository accountsRepository, AuthenticationManager authenticationManager, TokenRepository tokenRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.accountsRepository = accountsRepository;
         this.authenticationManager = authenticationManager;
         this.tokenRepository = tokenRepository;
@@ -41,10 +39,10 @@ public class AuthenticationService {
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getUserName(), request.getPassword()));
-        Account user = accountsRepository.findByUserName(request.getUserName())
-                .orElseThrow(() -> new CustomNotFoundException("User not found"));
-        String jwtToken = jwtService.generateJwtToken(user);
-        saveUserToken(user, jwtToken);
+        Account account = accountsRepository.findByUserName(request.getUserName())
+                .orElseThrow(() -> new AccountNotFoundException("User not found"));
+        String jwtToken = jwtService.generateJwtToken(account);
+        saveUserToken(account, jwtToken);
         return new AuthenticationResponse(jwtToken);
     }
 

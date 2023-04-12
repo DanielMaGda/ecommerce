@@ -1,6 +1,9 @@
 package com.danmag.ecommerce.service.model;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -12,6 +15,9 @@ import java.util.Set;
 
 @Data
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 @Table(name = "feature_values")
 public class FeatureValue {
 

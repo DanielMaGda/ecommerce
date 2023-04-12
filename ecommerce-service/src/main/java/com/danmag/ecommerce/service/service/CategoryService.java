@@ -4,7 +4,6 @@ import com.danmag.ecommerce.service.dto.CategoryDTO;
 import com.danmag.ecommerce.service.model.Category;
 import com.danmag.ecommerce.service.repository.CategoryRepository;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,11 +11,11 @@ import java.util.List;
 @Service
 public class CategoryService {
     private final CategoryRepository categoryRepository;
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
-    public CategoryService(CategoryRepository categoryRepository) {
+    public CategoryService(CategoryRepository categoryRepository, ModelMapper modelMapper) {
         this.categoryRepository = categoryRepository;
+        this.modelMapper = modelMapper;
     }
 
     public List<CategoryDTO> getCategory() {

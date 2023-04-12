@@ -35,7 +35,7 @@ public class ProductFeaturesService {
                 .toList();
     }
 
-    public void createProductFeatures(Product product, ProductDTO productDTO) {
+    public List<ProductFeatures> createProductFeatures(Product product, ProductDTO productDTO) {
         List<ProductFeatures> productFeaturesList = new ArrayList<>();
         for (ProductFeatureDTO productFeatureDTO : productDTO.getFeatures()) {
             Feature feature = modelMapper.map(productFeatureDTO.getFeature(), Feature.class);
@@ -51,6 +51,7 @@ public class ProductFeaturesService {
         }
 
         productFeatureRepository.saveAll(productFeaturesList);
+        return productFeaturesList;
     }
 
     public void updateProductFeatures(long productId, UpdateProductRequest request) {
@@ -64,7 +65,7 @@ public class ProductFeaturesService {
 
             // Find the existing ProductFeatures record for this feature
             ProductFeatures productFeatures = savedProductFeatures.stream()
-                    .filter(pf -> pf.getFeature().getId()==(feature.getId()))
+                    .filter(pf -> pf.getFeature().getId() == (feature.getId()))
                     .findFirst()
                     .orElse(null);
 
@@ -84,20 +85,20 @@ public class ProductFeaturesService {
     }
 
     private FeatureValue getOrCreateFeatureValue(FeatureValue featureValue, Feature feature) {
-        FeatureValue existingFeatureValue = featureValueRepository.findByfullName(featureValue.getFullName());
+        FeatureValue result = featureValueRepository.findByfullName(featureValue.getFullName());
 
-        if (existingFeatureValue != null) {
-            // If it does, use the existing FeatureValue
-            featureValue = existingFeatureValue;
-        } else {
-            // If it doesn't, save the new FeatureValue
-            featureValue.setFeature(feature);
-            featureValueRepository.save(featureValue);
+        if (result == null) {
+            result = FeatureValue.builder()
+                    .description(featureValue.getDescription())
+                    .feature(feature)
+                    .fullName(featureValue.getFullName())
+                    .shortName(featureValue.getShortName())
+                    .build();
+            featureValueRepository.save(result);
         }
 
-        return featureValue;
+        return result;
     }
-
 
 
 }

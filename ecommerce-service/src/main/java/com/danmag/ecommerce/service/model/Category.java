@@ -38,7 +38,15 @@ public class Category {
 
     @OneToMany(mappedBy = "parentCategory")
     private List<Category> subcategories;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "category_feature",
+            joinColumns = {@JoinColumn(name = "category_id")},
+            inverseJoinColumns = {@JoinColumn(name = "feature_id")})
+    private List<Feature> feature;
 
+    public Category() {
+        feature = new ArrayList<>();
+    }
 
     @Override
     public String toString() {
@@ -49,15 +57,5 @@ public class Category {
                 ", parentGroup=" + parentGroup +
                 ", feature=" + feature +
                 '}';
-    }
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "category_feature",
-            joinColumns = {@JoinColumn(name = "category_id")},
-            inverseJoinColumns = {@JoinColumn(name = "feature_id")})
-    private List<Feature> feature;
-
-    public Category() {
-        feature = new ArrayList<>();
     }
 }

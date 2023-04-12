@@ -3,36 +3,31 @@ package com.danmag.ecommerce.service.service;
 import com.danmag.ecommerce.service.dto.ProductDTO;
 import com.danmag.ecommerce.service.dto.ProductFeatureDTO;
 import com.danmag.ecommerce.service.dto.request.UpdateProductRequest;
+import com.danmag.ecommerce.service.exceptions.ConflictException;
 import com.danmag.ecommerce.service.exceptions.ProductNotFoundException;
+import com.danmag.ecommerce.service.exceptions.ProductOutOfStockException;
 import com.danmag.ecommerce.service.model.Product;
 import com.danmag.ecommerce.service.repository.ProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.expression.ExpressionException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-//TODO Factory: You could use the Factory pattern to create different types of products in the online shop.
-// The factory would have a method that takes in the type of product and returns an instance of that product
-// without specifying the exact class. This allows for easy addition of new products to the shop without modifying the existing code.
-//TODO Adapter: You could use the Adapter pattern to adapt the interface of the Payment Service
-// to match the interface required by the shop.
-// This allows the shop to use the Payment Service without having to modify the Payment Service code.
 
 @Service
 public class ProductService {
     private final ProductRepository productRepository;
 
     private final ProductFeaturesService productFeaturesService;
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     @Autowired
-    public ProductService(ProductRepository productRepository, ProductFeaturesService productFeaturesService) {
+    public ProductService(ProductRepository productRepository, ProductFeaturesService productFeaturesService, ModelMapper modelMapper) {
         this.productRepository = productRepository;
 
         this.productFeaturesService = productFeaturesService;
+        this.modelMapper = modelMapper;
     }
 
     public List<ProductDTO> getAllProductsWithFeatures() {
@@ -49,33 +44,34 @@ public class ProductService {
     }
 
     public ProductDTO getProductById(long id) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new ExpressionException("Product not found with id " + id));
+        Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found with id " + id));
         ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
         List<ProductFeatureDTO> productFeatureDTO = productFeaturesService.getProductFeatureListForProduct(id);
         productDTO.setFeatures(productFeatureDTO);
-
-
         return productDTO;
     }
 
     public ProductDTO updateProduct(long id, UpdateProductRequest request) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ProductNotFoundException("Product not found with id " + id));
-
+        Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotFoundException("Product not found with id " + id));
         product.setName(request.getName());
         product.setPrice(request.getPrice());
         product.setStock(request.getStock());
+        ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
 
-        product = productRepository.saveAndFlush(product);
 
-        productFeaturesService.updateProductFeatures(product.getId(), request);
+        productRepository.saveAndFlush(product);
 
-        return modelMapper.map(product, ProductDTO.class);
+
+        productFeaturesService.updateProductFeatures(id, request);
+
+        return productDTO;
     }
 
 
-
     public ProductDTO createProduct(ProductDTO productDTO) {
+        if (productRepository.existsByName(productDTO.getName())) {
+            throw new ConflictException("Product with this name exist");
+        }
         Product product = modelMapper.map(productDTO, Product.class);
         productRepository.saveAndFlush(product);
 
@@ -84,10 +80,37 @@ public class ProductService {
 
         return modelMapper.map(product, ProductDTO.class);
     }
-
     public void deleteProduct(long id) {
+        Optional<Product> optionalProduct = productRepository.findById(id);
+        if(optionalProduct.isPresent()){
+            productRepository.deleteById(id);
 
-        productRepository.deleteById(id);
+        }
+        else {
+            throw new ProductNotFoundException("Product with "+ id +" dont exist ");
+        }
+    }
+
+    protected boolean checkProductStock(long productId, int amount) {
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+        if (optionalProduct.isPresent()) {
+            if (optionalProduct.get().getStock() < amount) {
+                throw new ProductOutOfStockException("Product is out of stock");
+            }
+            return true;
+        }
+        throw new ProductNotFoundException("Product with this id was not found");
+
+    }
+
+    public Product fetchProduct(long productId) {
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+        if (optionalProduct.isPresent()) {
+            return optionalProduct.get();
+        } else {
+            throw new ProductNotFoundException("Product with this id was not found");
+
+        }
     }
 
 

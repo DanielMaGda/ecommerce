@@ -1,7 +1,7 @@
 package com.danmag.ecommerce.service.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -11,6 +11,9 @@ import java.util.List;
 
 @Data
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "cart")
 public class Cart {
     @Id
@@ -18,19 +21,21 @@ public class Cart {
     private long id;
 
     @NotNull
+    @EqualsAndHashCode.Exclude
     @JsonManagedReference
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private Account account;
 
-    @DecimalMin(value = "0.0")
-    private float totalPrice;
 
-    @DecimalMin(value = "0.0")
-    private float totalCartPrice;
+    @DecimalMin("0.0")
+    private double totalPrice;
 
-    @DecimalMin(value = "0.0")
-    private float totalCargoPrice;
+    @DecimalMin("0.0")
+    private double totalCartPrice;
+
+    @DecimalMin("0.0")
+    private double totalCargoPrice;
 
     @Valid
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
@@ -41,7 +46,10 @@ public class Cart {
     public String toString() {
         return "Cart{" +
                 "id=" + id +
+                ", account=" + account +
                 ", totalPrice=" + totalPrice +
+                ", totalCartPrice=" + totalCartPrice +
+                ", totalCargoPrice=" + totalCargoPrice +
                 ", cartItemList=" + cartItemList +
                 '}';
     }

@@ -2,22 +2,24 @@ package com.danmag.ecommerce.service.dto;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @Data
 
 public class CartItemDto {
     private long id;
 
-    private CartProductDto product;
+    private ProductDetailsDto product;
 
-    private Integer amount;
     @JsonBackReference
 
     private CartDto cart;
+    private Integer amount;
 
     @Override
     public String toString() {

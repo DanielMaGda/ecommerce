@@ -1,5 +1,6 @@
 package com.danmag.ecommerce.service.model;
 
+import com.danmag.ecommerce.service.enums.ShipmentStatus;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,7 +16,6 @@ import javax.validation.constraints.Size;
 import java.util.Date;
 import java.util.List;
 
-//TODO Add Observer for Order to Interact with Shop Magazine when number of product in magazine change
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -28,6 +28,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @JsonManagedReference
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "account_id", referencedColumnName = "id")
     private Account account;
@@ -77,17 +78,17 @@ public class Order {
     private String phone;
 
     @NotNull
-    private Float totalPrice;
+    private Double totalPrice;
 
     @NotNull
-    private Float totalCargoPrice;
+    private Double totalCargoPrice;
 
 
     @Type(type = "timestamp")
     private Date date;
 
     @NotNull
-    private Integer shipped;
+    private ShipmentStatus shipped;
 
     @NotNull
     @Size(min = 2, max = 50)

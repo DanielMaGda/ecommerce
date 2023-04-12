@@ -14,23 +14,19 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Entity
 public class Token {
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    public Account user;
     @Id
     @GeneratedValue
     private Integer id;
-
     @Column(unique = true)
     private String token;
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private TokenType type = TokenType.BEARER;
-
     private boolean revoked;
-
     private boolean expired;
-
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    public Account user;
 
 
 }

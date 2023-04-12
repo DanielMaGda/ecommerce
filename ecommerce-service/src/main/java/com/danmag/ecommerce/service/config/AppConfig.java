@@ -1,5 +1,6 @@
 package com.danmag.ecommerce.service.config;
 
+import com.danmag.ecommerce.service.exceptions.AuthenticationManagerException;
 import com.danmag.ecommerce.service.repository.AccountsRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
@@ -41,8 +42,12 @@ public class AppConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config)   {
+        try {
+            return config.getAuthenticationManager();
+        } catch (Exception e) {
+            throw new AuthenticationManagerException("Failed to create AuthenticationManager", e);
+        }
     }
 
     @Bean
